@@ -10,7 +10,7 @@
     "url": "https://github.com/urish/espruino-cast"
   },
   "scripts": {
-    "start": "concurrently \"tsc -w\" \"live-server dist\"",
+    "start": "concurrently \"webpack -w\" \"live-server dist\"",
     "build": "tsc",
     "deploy": "yarn build && firebase deploy"
   },
@@ -19,5 +19,10 @@
     "concurrently": "^4.0.0",
     "live-server": "^1.2.0",
     "typescript": "^3.0.1"
+  },
+  "dependencies": {
+    "ts-loader": "^5.3.3",
+    "webpack": "^4.28.4",
+    "webpack-cli": "^3.2.1"
   }
 }
