@@ -21,6 +21,7 @@
     "typescript": "^3.0.1"
   },
   "dependencies": {
+    "heatshrink-ts": "^0.1.0",
     "ts-loader": "^5.3.3",
     "webpack": "^4.28.4",
     "webpack-cli": "^3.2.1"
