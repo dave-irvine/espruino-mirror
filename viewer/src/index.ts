@@ -1,3 +1,11 @@
+import { HeatshrinkDecoder } from 'heatshrink-ts';
+
+const WINDOW_BITS = 8;
+const LOOKAHEAD_BITS = 6;
+const INPUT_BUFFER_LENGTH = 32;
+
+const decoder = new HeatshrinkDecoder(WINDOW_BITS, LOOKAHEAD_BITS, INPUT_BUFFER_LENGTH);
+
 let device: BluetoothDevice | null = null;
 
 function updateButtons() {
@@ -28,11 +36,14 @@ async function connect() {
       },
     ],
   });
+
   device.addEventListener('gattserverdisconnected', () => {
     device = null;
     updateButtons();
   });
+
   updateButtons();
+
   await device.gatt!.connect();
   const svc = await device.gatt!.getPrimaryService(0xfeed);
   const width = (await (await svc.getCharacteristic(0xfe01)).readValue()).getUint16(0, true);
