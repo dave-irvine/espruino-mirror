@@ -1,3 +1,9 @@
+const heatshrink = require('heatshrink');
+const pre = Array(19).fill(0);
+const post = Array(19).fill(255);
+
+let casting = false;
+
 if (!g.__origFlip) {
   g.__origFlip = g.flip;
 }
@@ -27,28 +33,57 @@ NRF.setServices(
   { advertise: ['FEED'], uart: true },
 );
 
-let casting = false;
 NRF.on('connect', function() {
   casting = true;
 });
 
-NRF.on('disconnect', () => (casting = false));
+NRF.on('disconnect', function() {
+  casting = false;
+});
 
 g.flip = function() {
-  const buf = new Uint8Array(g.buffer);
+  let buf = new Uint8Array(g.buffer);
+
   if (casting) {
-    let chunkSize = 19;
-    for (let i = 0; i < buf.length; i += chunkSize, chunkSize = 20) {
-      const val = buf.slice(i, i + chunkSize);
+    let compressed = heatshrink.compress(buf);
+    buf = null;
+
+    const cbuff = new Uint8Array(compressed);
+    compressed = null;
+
+    NRF.updateServices({
+      0xfeed: {
+        0xfeed: {
+          value: pre,
+          notify: true,
+        },
+      },
+    });
+
+    let chunkSize = 18;
+    for (let i = 0; i < cbuff.length; i += chunkSize, chunkSize = 18) {
+      const val = cbuff.slice(i, i + chunkSize);
+      const final = [i].concat(val);
+
       NRF.updateServices({
         0xfeed: {
           0xfeed: {
-            value: val,
+            value: final,
             notify: true,
           },
         },
       });
     }
+
+    NRF.updateServices({
+      0xfeed: {
+        0xfeed: {
+          value: post,
+          notify: true,
+        },
+      },
+    });
   }
+
   g.__origFlip();
 };
